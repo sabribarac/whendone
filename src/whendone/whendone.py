@@ -26,6 +26,23 @@ class SlackChatIDError(Exception):
 
 class WhenDone:
     def format_time(self, seconds: float) -> str:
+        '''Format the time to display
+        Seconds will be converted to the right time.
+
+        Parameters
+        ----------
+        seconds : float
+            Amount of seconds the code did run.
+
+        Returns
+        ----------
+        formatted_time : str
+            Seconds formated to the right amount of time.
+
+        Examples
+        --------
+            format_time(61)
+        '''
         total_seconds = int(seconds)
         decimal_seconds = int((seconds - total_seconds) * 100)
         days = total_seconds // 86400
@@ -49,6 +66,20 @@ class WhenDone:
             return "{}.{:02} seconds".format(remaining_seconds, decimal_seconds)
 
     def __init__(self, telegram_token: str = "", slack_token: str = "") -> None:
+        '''Initiliaze class with token(s)
+
+        Parameters
+        --------
+        telegram_token : str
+            Telegram token obtained form BotFather
+
+        slack_token : str
+            Telegram token obtained form SlackAPI
+
+        Examples
+        --------
+        notifier = WhenDone(telegram_token='xxx',slack_token='xxx')
+        '''
         self.telegram_api_key = telegram_token or None
         self.client = WebClient(token=slack_token) if slack_token else None
         if not telegram_token and not slack_token:
@@ -69,6 +100,18 @@ class WhenDone:
         self.__seturl__(telegram_token)
 
     def addSlackChatID(self, id: str) -> None:
+        '''Add Slack Chat ID, to send the message(s) to.
+
+        Parameters
+        --------
+        id : str
+            Slack chat ID obtained from Slack
+
+        Examples
+        --------
+        notifier = WhenDone(telegram_token='xxx',slack_token='xxx')
+        notifier.addSlackChatID(id='X1234')
+        '''
         self.chat_ids.append(id)
         self.chat_ids = list(set(self.chat_ids))
 
@@ -77,7 +120,15 @@ class WhenDone:
             self.url = f"https://api.telegram.org/bot{telegram_token}/"
 
     def __dump_to_txt__(self, chat_ids):
+        '''Dump telegram chat ID's to a .txt file, because Telegram Bot
+         will restart and forget the current ID's. This will retrieve them and 
+         still succesfully send the message.
 
+        Parameters
+        --------
+        chat_ids : json
+            Telegram chat ID's obtained from Telegram
+        '''
         ids = set()
         if os.path.exists("chat_ids.txt"):
             with open("chat_ids.txt", "r") as f:
@@ -91,6 +142,13 @@ class WhenDone:
                     f.write(chat_id + "," + username)
 
     def __getchatid__(self) -> List[str]:
+        '''Will retrieve the chat ID's retrieved from the chat-bot.
+
+        Returns
+        --------
+        lst : List[str]
+            Telegram chat ID's obtained from Telegram
+        '''
         url = self.url + "getUpdates"
         chat_id = requests.get(url).json()
         lst = []
@@ -111,6 +169,13 @@ class WhenDone:
         return lst
 
     def __send_message__(self, message) -> None:
+        '''Will send the message through Telegram and/or Slack
+
+        Parameters
+        --------
+        message : str
+            The message to send
+        '''
         if self.telegram_api_key:
 
             resp = None
@@ -139,7 +204,7 @@ class WhenDone:
 
 
     def whendone(self, func):
-        """Log the date and time of a function"""
+        """Wrapper for timing and sending the message through Slack/Telegram"""
 
         def wrapper(*args, **kwargs):
             excep = False
