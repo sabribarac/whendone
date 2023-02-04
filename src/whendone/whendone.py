@@ -94,7 +94,8 @@ class WhenDone:
         url = self.url + "getUpdates"
         chat_id = requests.get(url).json()
         lst = []
-        if chat_id['result']:
+        print(chat_id)
+        if 'result' in chat_id:
             self.__dump_to_txt__(chat_ids=chat_id)
         else:
             if os.path.exists("chat_ids.txt"):
@@ -103,7 +104,8 @@ class WhenDone:
                         lst.append(line.strip().split(",")[0])
                     lst = list(set(lst))
                     return lst
-
+            else:
+                return lst
         for i in range(len(chat_id["result"])):
             lst.append(chat_id["result"][i]["message"]["chat"]["id"])
         return lst
