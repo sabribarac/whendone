@@ -1,4 +1,4 @@
-# whendone
+# WhenDone
 
 Python package to notify you when your function is done through Telegram and/or Slack!
 
